@@ -9,19 +9,12 @@
 
     <div style="max-width: 550px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
         <h2 style="margin-top: 0; color: #1e293b;">Static Bulk Email Dashboard</h2>
-        
-        <p style="color: #64748b; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
-            Paste your recipient list below separated by commas. Make sure your template <strong>template_km1kppo</strong> has <code>{{to_email}}</code> set in the dashboard's "To Email" field.
+        <p style="color: #64748b; font-size: 14px; line-height: 1.5;">
+            Sends your template <strong>template_km1kppo</strong> to multiple recipients sequentially using native REST API calls.
         </p>
-
-        <!-- New Comma-Separated Input Field -->
-        <div style="margin-bottom: 20px;">
-            <label for="email-input" style="display: block; font-weight: 600; color: #475569; margin-bottom: 8px; font-size: 14px;">Recipients List (Comma-Separated):</label>
-            <textarea id="email-input" rows="4" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 14px; box-sizing: border-box; resize: vertical;" placeholder="example1@gmail.com, example2@yahoo.com, test3@domain.com"></textarea>
-        </div>
         
         <div style="margin: 24px 0;">
-            <button id="send-btn" onclick="processAndSend()" style="width: 100%; background: #2563eb; color: white; border: none; padding: 12px; font-size: 16px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s;">
+            <button id="send-btn" onclick="sendBulkEmails()" style="width: 100%; background: #2563eb; color: white; border: none; padding: 12px; font-size: 16px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s;">
                 Launch Mailing Process
             </button>
         </div>
@@ -29,7 +22,7 @@
         <div style="border-top: 1px solid #e2e8f0; padding-top: 20px;">
             <h4 style="margin: 0 0 10px 0; color: #475569;">Activity Log</h4>
             <div id="status" style="font-family: 'Courier New', Courier, monospace; font-size: 13px; background: #0f172a; color: #38bdf8; padding: 15px; border-radius: 6px; min-height: 80px; max-height: 250px; overflow-y: auto; line-height: 1.6;">
-                System armed. Enter emails and press Launch...
+                System armed. Using direct native API module. Ready...
             </div>
         </div>
     </div>
@@ -40,42 +33,22 @@
         const templateID = "template_km1kppo";
         const publicKey = "wpkTO75TywMfnFjyK";
 
-        async function processAndSend() {
+        // Targets list
+        const emailList = [
+            "tolecaxtone2@gmail.com",
+            "caxtonetechnologieske@gmail.com",
+            "recipient3@example.com"
+        ];
+
+        async function sendBulkEmails() {
             const btn = document.getElementById("send-btn");
             const statusDiv = document.getElementById("status");
-            const inputField = document.getElementById("email-input");
             
-            // 1. Grab raw input value
-            const rawInput = inputField.value.trim();
-            
-            if (!rawInput) {
-                statusDiv.innerHTML = "<span style='color: #f87171;'>[ERROR: Please enter at least one email address.]</span>";
-                return;
-            }
-
-            // 2. Split text by commas, trim accidental spaces, and remove empty entries
-            const emailList = rawInput.split(',')
-                                      .map(email => email.trim())
-                                      .filter(email => email.length > 0);
-
-            if (emailList.length === 0) {
-                statusDiv.innerHTML = "<span style='color: #f87171;'>[ERROR: No valid emails found.]</span>";
-                return;
-            }
-
-            // Lock interface buttons
             btn.disabled = true;
             btn.style.background = "#94a3b8";
-            statusDiv.innerHTML = `Identified ${emailList.length} targets. Initiating sequence...<br><br>`;
+            statusDiv.innerHTML = "Processing outbound campaign sequence...<br><br>";
 
-            // 3. Sequential transmission loop
             for (const email of emailList) {
-                // Validate basic email layout structure before hitting API
-                if (!email.includes('@')) {
-                    statusDiv.innerHTML += `Skipping ${email}... <span style='color: #f87171;'>[INVALID EMAIL FORMAT]</span><br>`;
-                    continue;
-                }
-
                 const payload = {
                     service_id: serviceID,
                     template_id: templateID,
@@ -88,7 +61,8 @@
                 try {
                     statusDiv.innerHTML += `Connecting standard relay for ${email}... `;
                     
-                    const response = await fetch('https://emailjs.com', {
+                    // CRITICAL FIX: Explicitly target api.emailjs.com, not emailjs.com
+                    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -107,7 +81,7 @@
                     statusDiv.innerHTML += `<span style='color: #f87171;'>[NETWORK FAILED: ${error.message}]</span><br>`;
                 }
 
-                // 1.5-second pacing delay to respect API threshold tracking
+                // 1.5-second pacing delay
                 await new Promise(resolve => setTimeout(resolve, 1500));
             }
 
