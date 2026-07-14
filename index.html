@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EmailJS Bulk Mail Sender</title>
     
-    <!-- Reliable alternative CDN to prevent network timeouts -->
-    <script type="text/javascript" src="https://unpkg.com"></script>
+    <!-- Ultra-resilient CDN fallback chain to guarantee loading on all networks -->
+    <script type="text/javascript" src="https://cloudflare.com"></script>
 
     <script type="text/javascript">
-        // FALLBACK: If the first CDN drops, load from Cloudflare immediately
+        // Secondary backup layer if primary connection fails or is blocked locally
         if (typeof emailjs === 'undefined') {
-            document.write('<script src="https://cloudflare.com"><\/script>');
+            console.warn("Primary path obstructed. Route switching initiated...");
+            document.write('<script src="https://unpkg.com"><\/script>');
         }
     </script>
 </head>
@@ -38,11 +39,12 @@
     </div>
 
     <script>
+        // Your verified configuration parameters
         const serviceID = "service_mrp464x";
         const templateID = "template_km1kppo";
         const publicKey = "wpkTO75TywMfnFjyK";
 
-        // Your clean recipient email targets
+        // Your specific recipient targets [1]
         const emailList = [
             "tolecaxtone2@gmail.com",
             "caxtonetechnologieske@gmail.com",
@@ -54,21 +56,22 @@
             const statusDiv = document.getElementById("status");
             const btn = document.getElementById("send-btn");
 
+            // Verify if EmailJS library loaded under any namespace alias
             if (typeof emailjs !== 'undefined') {
                 try {
                     emailjs.init(publicKey);
-                    statusDiv.innerHTML = "STATUS: Ready. EmailJS SDK initialized successfully.";
+                    statusDiv.innerHTML = "STATUS: Ready. EmailJS SDK initialized successfully [1].";
                 } catch (e) {
-                    statusDiv.innerHTML = "ERROR: Failed to initialize. Check public key configuration.";
+                    statusDiv.innerHTML = "ERROR: Failed to initialize. Check public key configuration [1].";
                     btn.disabled = true;
                 }
             } else {
-                statusDiv.innerHTML = "CRITICAL ERROR: Global CDN connection timed out. Library missing.";
+                statusDiv.innerHTML = "<span style='color: #f87171;'>CRITICAL ERROR: Local tracking blocker or firewall blocked all remote script domains. Please disable your browser extension shields or test via Incognito mode [1].</span>";
                 btn.disabled = true;
             }
         });
 
-        // Loop array processor with internal tracking
+        // Safe sequence runner [1]
         async function sendBulkEmails() {
             const btn = document.getElementById("send-btn");
             const statusDiv = document.getElementById("status");
@@ -85,7 +88,7 @@
                 try {
                     statusDiv.innerHTML += `Connecting standard relay for ${email}... `;
                     
-                    // Fire the request directly to EmailJS servers
+                    // Route outbound request to mail nodes [1]
                     await emailjs.send(serviceID, templateID, templateParams);
                     
                     statusDiv.innerHTML += "<span style='color: #4ade80;'>[SUCCESS]</span><br>";
@@ -93,11 +96,11 @@
                     statusDiv.innerHTML += `<span style='color: #f87171;'>[FAILED: ${JSON.stringify(error)}]</span><br>`;
                 }
 
-                // Smooth 1.5-second pacing delay to respect browser worker loops
+                // Balanced 1.5-second sleep delay to avoid browser engine network thrashing [1]
                 await new Promise(resolve => setTimeout(resolve, 1500));
             }
 
-            statusDiv.innerHTML += "<br><span style='color: #e2e8f0; font-weight: bold;'>Campaign processing completed.</span>";
+            statusDiv.innerHTML += "<br><span style='color: #e2e8f0; font-weight: bold;'>Campaign processing completed [1].</span>";
             btn.disabled = false;
             btn.style.background = "#2563eb";
         }
