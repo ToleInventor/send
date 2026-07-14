@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmailJS Bulk Mail Sender</title>
+    
+    <!-- Reliable alternative CDN to prevent network timeouts -->
+    <script type="text/javascript" src="https://unpkg.com"></script>
+
+    <script type="text/javascript">
+        // FALLBACK: If the first CDN drops, load from Cloudflare immediately
+        if (typeof emailjs === 'undefined') {
+            document.write('<script src="https://cloudflare.com"><\/script>');
+        }
+    </script>
+</head>
+<body style="background-color: #f5f7fb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 40px 20px;">
+
+    <div style="max-width: 550px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <h2 style="margin-top: 0; color: #1e293b;">Static Bulk Email Dashboard</h2>
+        <p style="color: #64748b; font-size: 14px; line-height: 1.5;">
+            Sends your template <strong>template_km1kppo</strong> to multiple recipients sequentially using client-side execution.
+        </p>
+        
+        <div style="margin: 24px 0;">
+            <button id="send-btn" onclick="sendBulkEmails()" style="width: 100%; background: #2563eb; color: white; border: none; padding: 12px; font-size: 16px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s;">
+                Launch Mailing Process
+            </button>
+        </div>
+        
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 20px;">
+            <h4 style="margin: 0 0 10px 0; color: #475569;">Activity Log</h4>
+            <div id="status" style="font-family: 'Courier New', Courier, monospace; font-size: 13px; background: #0f172a; color: #38bdf8; padding: 15px; border-radius: 6px; min-height: 80px; max-height: 250px; overflow-y: auto; line-height: 1.6;">
+                System armed. Awaiting execution trigger...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const serviceID = "service_mrp464x";
+        const templateID = "template_km1kppo";
+        const publicKey = "wpkTO75TywMfnFjyK";
+
+        // Your clean recipient email targets
+        const emailList = [
+            "tolecaxtone2@gmail.com",
+            "caxtonetechnologieske@gmail.com",
+            "recipient3@example.com"
+        ];
+
+        // Safe Initialization Check on Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            const statusDiv = document.getElementById("status");
+            const btn = document.getElementById("send-btn");
+
+            if (typeof emailjs !== 'undefined') {
+                try {
+                    emailjs.init(publicKey);
+                    statusDiv.innerHTML = "STATUS: Ready. EmailJS SDK initialized successfully.";
+                } catch (e) {
+                    statusDiv.innerHTML = "ERROR: Failed to initialize. Check public key configuration.";
+                    btn.disabled = true;
+                }
+            } else {
+                statusDiv.innerHTML = "CRITICAL ERROR: Global CDN connection timed out. Library missing.";
+                btn.disabled = true;
+            }
+        });
+
+        // Loop array processor with internal tracking
+        async function sendBulkEmails() {
+            const btn = document.getElementById("send-btn");
+            const statusDiv = document.getElementById("status");
+            
+            btn.disabled = true;
+            btn.style.background = "#94a3b8";
+            statusDiv.innerHTML = "Processing outbound campaign sequence...<br><br>";
+
+            for (const email of emailList) {
+                const templateParams = {
+                    to_email: email
+                };
+
+                try {
+                    statusDiv.innerHTML += `Connecting standard relay for ${email}... `;
+                    
+                    // Fire the request directly to EmailJS servers
+                    await emailjs.send(serviceID, templateID, templateParams);
+                    
+                    statusDiv.innerHTML += "<span style='color: #4ade80;'>[SUCCESS]</span><br>";
+                } catch (error) {
+                    statusDiv.innerHTML += `<span style='color: #f87171;'>[FAILED: ${JSON.stringify(error)}]</span><br>`;
+                }
+
+                // Smooth 1.5-second pacing delay to respect browser worker loops
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+
+            statusDiv.innerHTML += "<br><span style='color: #e2e8f0; font-weight: bold;'>Campaign processing completed.</span>";
+            btn.disabled = false;
+            btn.style.background = "#2563eb";
+        }
+    </script>
+
+</body>
+</html>
